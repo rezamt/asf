@@ -1,21 +1,43 @@
 package main
 
 import (
-	"fmt"
-	"html"
 	"log"
-	"net/http"
+
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/rezamt/asf-server/pkg/swagger/server/restapi"
+	"github.com/rezamt/asf-server/pkg/swagger/server/restapi/operations"
 )
 
 func main() {
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("%s: %s\n", r.Method, r.URL.Path)
-		fmt.Fprintf(w, "{ \"path\" : %q}", html.EscapeString(r.URL.Path))
-	})
+	// Initialize Swagger
+	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
+	if err != nil {
+		log.Fatalln(err)
+	}
 
-	log.Println("Listening on localhost:8080")
+	api := operations.NewHelloAPI(swaggerSpec)
+	server := restapi.NewServer(api)
+	defer server.Shutdown()
 
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	server.Port = 8080
+
+	// Implement the CheckHealth handler
+	api.CheckHealthHandler = operations.CheckHealthHandlerFunc(
+		func(user operations.CheckHealthParams) middleware.Responder {
+			return operations.NewCheckHealthOK().WithPayload("OK")
+		})
+
+	// Implement the GetHelloUser handler
+	api.GetHelloUserHandler = operations.GetHelloUserHandlerFunc(
+		func(user operations.GetHelloUserParams) middleware.Responder {
+			return operations.NewGetHelloUserOK().WithPayload("Hello " + user.User + "!")
+		})
+
+	// Start listening using having the handlers and port
+	if err := server.Serve(); err != nil {
+		log.Fatalln(err)
+	}
 
 }
