@@ -1,10 +1,10 @@
 package main
 
 import (
+	"github.com/go-openapi/runtime/middleware"
 	"log"
 
 	"github.com/go-openapi/loads"
-	"github.com/go-openapi/runtime/middleware"
 	"github.com/rezamt/asf-server/pkg/swagger/server/restapi"
 	"github.com/rezamt/asf-server/pkg/swagger/server/restapi/operations"
 )
@@ -23,17 +23,20 @@ func main() {
 
 	server.Port = 8080
 
+	api.GetHelloUserHandler = operations.GetHelloUserHandlerFunc(GetHelloUser)
+	api.CheckHealthHandler = operations.CheckHealthHandlerFunc(Health)
+
 	// Implement the CheckHealth handler
-	api.CheckHealthHandler = operations.CheckHealthHandlerFunc(
-		func(user operations.CheckHealthParams) middleware.Responder {
-			return operations.NewCheckHealthOK().WithPayload("OK")
-		})
+	//api.CheckHealthHandler = operations.CheckHealthHandlerFunc(
+	//	func(user operations.CheckHealthParams) middleware.Responder {
+	//		return operations.NewCheckHealthOK().WithPayload("OK")
+	//	})
 
 	// Implement the GetHelloUser handler
-	api.GetHelloUserHandler = operations.GetHelloUserHandlerFunc(
-		func(user operations.GetHelloUserParams) middleware.Responder {
-			return operations.NewGetHelloUserOK().WithPayload("Hello " + user.User + "!")
-		})
+	//api.GetHelloUserHandler = operations.GetHelloUserHandlerFunc(
+	//	func(user operations.GetHelloUserParams) middleware.Responder {
+	//		return operations.NewGetHelloUserOK().WithPayload("Hello " + user.User + "!")
+	//	})
 
 	// Start listening using having the handlers and port
 	if err := server.Serve(); err != nil {
@@ -41,3 +44,15 @@ func main() {
 	}
 
 }
+
+//Health route returns OK
+func Health(param operations.CheckHealthParams) middleware.Responder {
+	return operations.NewCheckHealthOK().WithPayload("OK")
+}
+
+
+//GetHelloUser returns Hello + your name
+func GetHelloUser(user operations.GetHelloUserParams) middleware.Responder {
+	return operations.NewGetHelloUserOK().WithPayload("Hello " + user.User + "!")
+}
+
