@@ -10,16 +10,17 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	"github.com/rezamt/asf-server/pkg/swagger/server/restapi/operations"
+	"github.com/rezamt/asf-server/pkg/efood/efood/restapi/operations"
+	"github.com/rezamt/asf-server/pkg/efood/efood/restapi/operations/user"
 )
 
-//go:generate swagger generate server --target ../../server --name Hello --spec ../../swagger.yml --principal interface{} --exclude-main
+//go:generate swagger generate server --target ../../efood --name Efood --spec ../../swagger.yml --principal interface{} --exclude-main
 
-func configureFlags(api *operations.HelloAPI) {
+func configureFlags(api *operations.EfoodAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
 
-func configureAPI(api *operations.HelloAPI) http.Handler {
+func configureAPI(api *operations.EfoodAPI) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
 
@@ -36,16 +37,22 @@ func configureAPI(api *operations.HelloAPI) http.Handler {
 	api.JSONConsumer = runtime.JSONConsumer()
 
 	api.JSONProducer = runtime.JSONProducer()
-	api.TxtProducer = runtime.TextProducer()
 
-	if api.GetHelloUserHandler == nil {
-		api.GetHelloUserHandler = operations.GetHelloUserHandlerFunc(func(params operations.GetHelloUserParams) middleware.Responder {
-			return middleware.NotImplemented("operation operations.GetHelloUser has not yet been implemented")
-		})
+	if api.OauthSecurityAuth == nil {
+		api.OauthSecurityAuth = func(token string, scopes []string) (interface{}, error) {
+			return nil, errors.NotImplemented("oauth2 bearer auth (OauthSecurity) has not yet been implemented")
+		}
 	}
-	if api.CheckHealthHandler == nil {
-		api.CheckHealthHandler = operations.CheckHealthHandlerFunc(func(params operations.CheckHealthParams) middleware.Responder {
-			return middleware.NotImplemented("operation operations.CheckHealth has not yet been implemented")
+
+	// Set your custom authorizer if needed. Default one is security.Authorized()
+	// Expected interface runtime.Authorizer
+	//
+	// Example:
+	// api.APIAuthorizer = security.Authorized()
+
+	if api.UserGetCartHandler == nil {
+		api.UserGetCartHandler = user.GetCartHandlerFunc(func(params user.GetCartParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation user.GetCart has not yet been implemented")
 		})
 	}
 

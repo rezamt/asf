@@ -99,6 +99,10 @@ endif
 build:
 	$(GO) build -o bin/asf-server cmd/asf/server.go
 
+## Running only
+run:
+	$(GO) run cmd/asf/server.go
+
 ## Compress all binaries
 pack:
 	@echo ">> packing all binaries"

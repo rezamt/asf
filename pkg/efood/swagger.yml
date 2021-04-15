@@ -1,0 +1,79 @@
+swagger: '2.0'
+info:
+  version: '1.0.0'
+  title: E-Food
+schemes: [http]
+host: e-food.com
+basePath: /v1
+consumes: [application/json]
+produces: [application/json]
+# note the new info here as securityDefinitions
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+  OauthSecurity:
+    type: oauth2
+    flow: accessCode
+    authorizationUrl: 'https://accounts.google.com/o/oauth2/v2/auth'
+    tokenUrl: 'https://www.googleapis.com/oauth2/v4/token'
+    scopes:
+      admin: Admin scope
+      user: User scope
+paths:
+  /user/cart:
+    get:
+      description: 'Get All cart items'
+      tags: [user]
+      operationId: GetCart
+      # note the "security" tag created on the restricted endpoint
+      security:
+        - OauthSecurity: [read, write]
+      responses:
+        200:
+          description: "All items in cart"
+          schema:
+            $ref: '#/definitions/CartPreview'
+        400:
+          description: Bad Request
+        404:
+          description: Item Not Found
+        500:
+          schema:
+            type: string
+          description: Server error
+definitions:
+  CartPreview:
+    type: array
+    items:
+      $ref: '#/definitions/CartItem'
+  CartItem:
+    type: object
+    properties:
+      productId:
+        type: integer
+      productName:
+        type: string
+      quantity:
+        type: integer
+      unitPrice:
+        type: number
+      imageUrl:
+        type: string
+      currency:
+        type: string
+  error:
+    type: object
+    required:
+      - message
+    properties:
+      code:
+        type: integer
+        format: int64
+      message:
+        type: string
+      fields:
+        type: string
+  principal:
+    type: string

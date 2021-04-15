@@ -1,4 +1,4 @@
-package swagger
+package asf
 
 //go:generate rm -rf server
 //go:generate mkdir -p server
